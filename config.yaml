@@ -1,0 +1,8 @@
+parameters:
+
+  # Data Paths
+  annotation_file:      /home/zxf/workspace/kaggle_AirbusShipDetection/data/input/train_ship_segmentations_v2.csv
+  train_images_dir:     /home/zxf/workspace/kaggle_AirbusShipDetection/data/input/train/
+  test_images_dir:      /home/zxf/workspace/kaggle_AirbusShipDetection/data/input/test/
+  metadata_filepath:    /home/zxf/workspace/kaggle_AirbusShipDetection/data/output/mimic_metadata.csv
+  masks_dir:  /home/zxf/workspace/kaggle_AirbusShipDetection/data/output/mimic_masks
