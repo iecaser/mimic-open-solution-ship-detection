@@ -8,6 +8,9 @@ tests/.cache
 # C extensions
 *.so
 
+# emacs
+*.#*
+
 # neptune, pycharm
 .cache
 .cache/
