@@ -6,3 +6,12 @@ parameters:
   test_images_dir:      /home/zxf/workspace/kaggle_AirbusShipDetection/data/input/test/
   metadata_filepath:    /home/zxf/workspace/kaggle_AirbusShipDetection/data/output/mimic_metadata.csv
   masks_dir:  /home/zxf/workspace/kaggle_AirbusShipDetection/data/output/mimic_masks
+  experiment_dir: /home/zxf/workspace/kaggle_AirbusShipDetection/data/output/mimic-experiment/
+
+  evaluation_size: 10000
+  evaluation_empty_fraction: 0.52
+  dev_mode_size: 1000
+
+  batch_size: 32
+  num_workers: 4
+  pin_memory: True
