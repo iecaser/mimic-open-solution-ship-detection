@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 from torch.utils.data.sampler import Sampler
 from torchvision import transforms
@@ -24,17 +25,19 @@ class OneClassClassificationDataset(Dataset):
         super().__init__()
         self.X = X
         self.y = y
-        self.transform = transforms.Compose([transforms.ToTensor(),
+        self.transform = transforms.Compose([transforms.Resize((224, 224)),
+                                             transforms.ToTensor(),
                                              transforms.Normalize(mean=dataset_params.mean,
                                                                   std=dataset_params.std),
                                              ])
 
     def __getitem__(self, i):
-        Xi = cv2.imread(self.X[i], 1)
-        Xi = cv2.cvtColor(Xi, cv2.COLOR_BGR2RGB)
+        # Xi = cv2.imread(self.X[i], 1)
+        # Xi = cv2.cvtColor(Xi, cv2.COLOR_BGR2RGB)
+        Xi = Image.open(self.X[i])
         Xi = self.transform(Xi)
         yi = self.y[i]
-        return Xi, yi
+        return Xi, int(yi)
 
     def __len__(self):
         return self.y.shape[0]
@@ -79,12 +82,13 @@ class OneClassClassificationLoader(BaseTransformer):
         self.dataset_params = dataset_params
 
     def transform(self, X, y, X_valid=None, y_valid=None):
-        flow = self.get_datagen(X, y, True, self.loader_params.train)
+        datagen = self.get_datagen(X, y, True, self.loader_params.train)
         if X_valid is not None and y_valid is not None:
-            flow_valid = self.get_datagen(X_valid, y_valid, False, self.loader_params.inference)
-            return flow, flow_valid
+            datagen_valid = self.get_datagen(X_valid, y_valid, False, self.loader_params.inference)
         else:
-            return flow
+            datagen_valid = None
+        return {'datagen': datagen,
+                'datagen_valid': datagen_valid}
 
     def get_datagen(self, X, y, train_mode, loader_params):
         if train_mode:
@@ -92,6 +96,7 @@ class OneClassClassificationLoader(BaseTransformer):
                                       sample_size=self.dataset_params.sample_size,
                                       empty_fraction=self.dataset_params.empty_fraction,
                                       )
+            sampler = None
             flow = DataLoader(dataset=OneClassClassificationDataset(X, y, self.dataset_params),
                               sampler=sampler,
                               **loader_params,

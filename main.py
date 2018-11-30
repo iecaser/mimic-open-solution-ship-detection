@@ -1,6 +1,8 @@
 import pandas as pd
 from attrdict import AttrDict
-from common_blocks import utils, pipelines
+from common_blocks import utils, pipelines, models
+from steppy.base import Step
+from steppy.adapter import Adapter, E
 
 logger = utils.get_logger('ship-detection')
 SEED = 1234
@@ -9,7 +11,7 @@ MEAN = [0.5, 0.5, 0.5]
 STD = [0.5, 0.5, 0.5]
 PARAMS = utils.read_yaml('config.yaml').parameters
 CONFIG = AttrDict({
-    'loader_params': {'train': {'batch_size': 32,
+    'loader_params': {'train': {'batch_size': PARAMS.batch_size,
                                 'shuffle': False,
                                 'num_workers': 4,
                                 'pin_memory': True,
@@ -49,18 +51,22 @@ def train_ship_no_ship():
             'callback_input': {'meta_valid': meta_valid_split},
             }
     pipeline = ship_no_ship_pipeline(config=CONFIG)
-    a, b = pipeline.fit_transform(data)
+    pipeline.fit_transform(data)
 
 
 def ship_no_ship_pipeline(config):
     preprocessing = pipelines.preprocess_binary_train(config=CONFIG,
                                                       suffix='_ship_no_ship',
                                                       )
-    preprocessing.set_parameters_upstream({'experiment_directory': config.execution.experiment_dir,
-                                           'is_fittable': False,
-                                           })
-    pipeline = preprocessing
-    return pipeline
+    preprocessing.set_parameters_upstream({'is_fittable': False})
+    network = Step(transformer=models.BinaryModel(),
+                   name='binary_model',
+                   input_steps=[preprocessing],
+                   adapter=Adapter({'datagen': E(preprocessing.name, 'datagen'),
+                                    'datagen_valid': E(preprocessing.name, 'datagen_valid')}),
+                   )
+    network.set_parameters_upstream({'experiment_directory': config.execution.experiment_dir})
+    return network
 
 
 train_ship_no_ship()

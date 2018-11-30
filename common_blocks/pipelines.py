@@ -1,6 +1,6 @@
 from steppy.base import Step
 from steppy.adapter import Adapter, E
-from common_blocks import loaders
+from common_blocks import loaders, models
 
 
 def preprocess_binary_train(config, suffix):
